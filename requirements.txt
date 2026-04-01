@@ -1,0 +1,6 @@
+# language — Python dependencies
+# Purpose: This file will pin backend and ML dependencies in later prompts.
+# Prompt 2 baseline backend dependencies:
+fastapi
+uvicorn
+torch

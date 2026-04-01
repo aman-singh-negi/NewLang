@@ -1,0 +1,115 @@
+================================================================================
+  language — SYNTAX REFERENCE (syntax.txt)
+================================================================================
+
+This file matches the current compiler (lexer → parser → semantic → IR → VM).
+
+
+--------------------------------------------------------------------------------
+1. LEXICAL RULES
+--------------------------------------------------------------------------------
+
+  Identifiers:  [A-Za-z_][A-Za-z0-9_]*
+  Numbers:      integers and floats
+  Strings:      "..." with escapes \\ \" \n \t
+  Operators:    + - * / = < > <= >= == != ++
+  Punctuation:  ( ) { } ; ,
+  Keywords:     var, when, otherwise, loop, func, show, return
+
+
+--------------------------------------------------------------------------------
+2. PROGRAM
+--------------------------------------------------------------------------------
+
+  program ::= statement*
+
+  Top-level statements may include `func` declarations. Nested `func` inside
+  blocks is a parse error.
+
+
+--------------------------------------------------------------------------------
+3. STATEMENTS
+--------------------------------------------------------------------------------
+
+  statement ::=
+        'var' IDENTIFIER '=' expression
+      | 'when' condition block [ 'otherwise' block ]
+      | 'loop' condition block
+      | 'func' IDENTIFIER '(' ')' block      // zero parameters only; top-level only
+      | 'show' expression
+      | 'return' expression
+      | IDENTIFIER '=' expression            // assignment to existing variable
+      | IDENTIFIER '++'                      // postfix increment
+      | IDENTIFIER '(' ')'                   // call statement (must be a function)
+
+  Optional ';' may appear after any statement.
+
+  block ::= '{' statement* '}'
+
+
+--------------------------------------------------------------------------------
+4. CONDITIONS
+--------------------------------------------------------------------------------
+
+  condition ::= expression COMPARATOR expression
+
+  COMPARATOR ::= == | != | < | <= | > | >=
+
+  Used by `when` and `loop`. The loop repeats the body while the condition is
+  non-zero (true).
+
+
+--------------------------------------------------------------------------------
+5. EXPRESSIONS
+--------------------------------------------------------------------------------
+
+  expression ::= term ( ('+' | '-') term )*
+  term       ::= factor ( ('*' | '/') factor )*
+  factor     ::= NUMBER
+               | STRING
+               | IDENTIFIER
+               | IDENTIFIER '(' ')'          // call (zero args); not inside arithmetic
+               | '(' expression ')'
+
+  • Calls `foo()` cannot be used inside arithmetic or on the right of `=` (void).
+  • `show foo()` runs the function and prints its return value.
+  • String literals are only for `show` and similar; do not use strings in `+ - * /` or conditions.
+
+
+--------------------------------------------------------------------------------
+6. FUNCTIONS
+--------------------------------------------------------------------------------
+
+  • Declaration:  func name ( ) { ... }
+  • Call:         name ( )
+  • Functions share the global variable store with the main program (no stack
+    frames for locals beyond block scopes inside the function).
+  • Implicit return value 0 is placed on the stack for `show` after a call.
+
+
+--------------------------------------------------------------------------------
+7. PRINTING
+--------------------------------------------------------------------------------
+
+  show <expression>
+
+  Prints the value of the expression to the VM output stream.
+
+
+--------------------------------------------------------------------------------
+8. SEMANTICS (brief)
+--------------------------------------------------------------------------------
+
+  • Variables must be declared before use (per scope).
+  • Types: int or float; operands in +/-/*// and comparisons must match.
+  • `void` results from calls cannot be mixed into arithmetic or `var` init.
+
+
+--------------------------------------------------------------------------------
+9. AI MODEL NOTE
+--------------------------------------------------------------------------------
+
+  The optional classifier is a rough heuristic. Use Compile / Run for real
+  behavior.
+
+================================================================================
