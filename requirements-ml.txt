@@ -1,0 +1,3 @@
+# Optional: AI classifier in /ai-suggest (train locally, heavy dependency).
+-r requirements.txt
+torch

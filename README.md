@@ -24,7 +24,19 @@
 ```
 
 - **Source code** is tokenized, parsed to an AST-shaped dict, checked semantically, lowered to IR, optimized, then converted to bytecode and optionally executed on the VM.
-- **Frontend** calls the same endpoints you would use from curl or another client; `VITE_API_URL` points at the backend.
+- **Frontend** calls the same endpoints you would use from curl or another client; `VITE_API_URL` points at the backend (optional).
+
+---
+
+## Deploy on Vercel
+
+1. Import the GitHub repo in [Vercel](https://vercel.com). If the repo root is not this project folder, set **Root Directory** to `astralang` (or the folder that contains `vercel.json`, `api/`, `backend/`, and `frontend/`).
+2. **Build settings** are in `vercel.json`: static site from `frontend/dist`, Python **Serverless Function** at `api/index.py` (FastAPI via [Mangum](https://github.com/Kludex/mangum)). Routes under **`/api/*`** hit the compiler (`/api/health`, `/api/compile`, etc.).
+3. **Environment**: `VERCEL=1` is set automatically on Vercel builds; CORS is opened for browser calls. Optionally set `CORS_ORIGINS` to a comma-separated list of extra allowed origins.
+4. **Dependencies**: root `requirements.txt` is **PyTorch-free** so the bundle fits serverless limits. The IDE talks to the same origin in production (`/api/...`). Optional local PyTorch: `pip install -r requirements-ml.txt`.
+5. **AI panel**: Without `torch` on Vercel, `/ai-suggest` returns the placeholder / `torch_missing` response unless you ship a custom setup with torch (not recommended on Hobby due to size/time limits).
+
+Local development is unchanged: run the API from `backend/` with Uvicorn on port 8000 and the SPA with `npm run dev` in `frontend/`.
 
 ---
 
@@ -32,6 +44,8 @@
 
 | Path | Role |
 |------|------|
+| `vercel.json` | Vercel: static `frontend/dist`, rewrite `/api/*` → serverless |
+| `api/index.py` | Vercel serverless entry (Mangum); mounts FastAPI at `/api` |
 | `backend/main.py` | FastAPI app, CORS, routes `/compile`, `/run`, `/ai-suggest` |
 | `backend/compiler_service.py` | End-to-end compile/run + optional AI inference |
 | `backend/lexer/` | Lexer + token definitions |

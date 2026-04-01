@@ -15,8 +15,6 @@ _AI_ROOT = Path(__file__).resolve().parent.parent / "ai"
 if str(_AI_ROOT) not in sys.path:
     sys.path.insert(0, str(_AI_ROOT))
 
-from model_arch import build_model_from_config  # noqa: E402
-
 from codegen.codegen import generate_bytecode
 from ir.ir_generator import generate_ir
 from lexer.lexer import LexerError, tokenize
@@ -133,6 +131,8 @@ def ai_suggest(code: str) -> Dict[str, Any]:
         out = _default_ai_suggest()
         out["status"] = "torch_missing"
         return out
+
+    from model_arch import build_model_from_config  # noqa: PLC0415 — only when model exists
 
     try:
         meta = torch.load(ckpt, map_location="cpu", weights_only=False)

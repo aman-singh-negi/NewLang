@@ -4,6 +4,7 @@ Purpose:
 - Exposes compile, run, and AI suggestion APIs for the IDE frontend.
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -54,16 +55,21 @@ app = FastAPI(
     description=APP_DESCRIPTION,
 )
 
-# CORS: allow local Vite dev server and typical production origins.
+# CORS: Vite dev, previews, and any Vercel / custom front-end origin.
+_default_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+_extra = os.getenv("CORS_ORIGINS", "").strip()
+_origins = _default_origins + [o.strip() for o in _extra.split(",") if o.strip()]
+_allow_all = os.getenv("VERCEL", "").lower() in ("1", "true", "yes")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
-    allow_credentials=True,
+    allow_origins=_origins if not _allow_all else ["*"],
+    allow_credentials=not _allow_all,
     allow_methods=["*"],
     allow_headers=["*"],
 )

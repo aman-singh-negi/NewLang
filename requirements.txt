@@ -1,6 +1,5 @@
-# language — Python dependencies
-# Purpose: This file will pin backend and ML dependencies in later prompts.
-# Prompt 2 baseline backend dependencies:
-fastapi
-uvicorn
-torch
+# Installed for Vercel serverless and minimal local API runs (no PyTorch).
+# Optional ML: pip install -r requirements-ml.txt
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+mangum>=0.17.0
